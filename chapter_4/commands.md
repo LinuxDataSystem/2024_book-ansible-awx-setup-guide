@@ -63,6 +63,10 @@ metadata:
   name: awx-demo
 spec:
   service_type: nodeport
+  # AWX 외부 접속 포트
+  #nodeport_port: 30080
+  # awx-secret.yml 파일을 생성하였을 경우 주석을 해제
+  #admin_password_secret: custom-awx-admin-password
   projects_persistence: true
   projects_storage_size: 20Gi
   projects_storage_access_mode: ReadWriteOnce
@@ -75,6 +79,21 @@ spec:
       memory: 2Gi
 ```
 
+#### 4.3.4.1.1. awx 관리자 비밀번호 설정 파일 생성
+```yaml
+# awx-secret.yml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-awx-admin-password
+  namespace: awx
+type: Opaque
+data:
+  password: $(echo -n "**adminpassword**" | base64)
+EOF
+```
+
 ```yaml
 # kustomization.yaml
 ---
@@ -82,12 +101,14 @@ spec:
 resources:
   # Add this extra line:
   - awx-demo.yml
+  # awx-secret.yml 파일을 생성하였을 경우 주석을 해제
+  #- awx-secret.yml
 ```
 
 #### 4.3.4.2. awx 배포 실행
 ```bash
 # kubectl apply -f awx-demo.yml 
-
+or
 # kubectl apply -k .
 ```
 
